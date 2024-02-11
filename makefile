@@ -1,2 +1,2 @@
-start:
+start
   cd frontend && npm start
