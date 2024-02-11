@@ -24,3 +24,8 @@
   height: 10%;
   box-sizing: border-box;
 }
+
+.visited {
+  background-color: #fff;
+  /* Белый цвет для посещенных ячеек */
+}
