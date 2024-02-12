@@ -11,32 +11,70 @@ const GridComponent = ({ gridSize }) => {
           row: rowIndex,
           col: colIndex,
           visited: false,
+          wall: true,
         }))
       ));
 
-      const stack = [];
-      let currentCell = { row: 0, col: 0 };
-      stack.push(currentCell);
+      const startRow = Math.floor(Math.random() * gridSize);
+      const startCol = Math.floor(Math.random() * gridSize);
 
-      while (stack.length > 0) {
-        const neighbors = getUnvisitedNeighbors(currentCell, newGrid);
+      newGrid[startRow][startCol].visited = true;
+      newGrid[startRow][startCol].wall = false;
 
-        if (neighbors.length > 0) {
-          const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
-          removeWall(currentCell, randomNeighbor, newGrid);
-          randomNeighbor.visited = true;
-          stack.push(randomNeighbor);
-          currentCell = randomNeighbor;
-        } else {
-          currentCell = stack.pop();
+      const walls = getWalls(startRow, startCol, gridSize);
+
+      while (walls.length > 0) {
+        const randomWallIndex = Math.floor(Math.random() * walls.length);
+        const { row, col } = walls[randomWallIndex];
+
+        const neighbors = getNeighbors(row, col, newGrid);
+
+        const unvisitedNeighbors = neighbors.filter(
+          neighbor => !newGrid[neighbor.row][neighbor.col].visited
+        );
+
+        if (unvisitedNeighbors.length > 0) {
+          const randomNeighbor = unvisitedNeighbors[Math.floor(Math.random() * unvisitedNeighbors.length)];
+          newGrid[randomNeighbor.row][randomNeighbor.col].visited = true;
+          newGrid[randomNeighbor.row][randomNeighbor.col].wall = false;
+
+          newGrid[row][col].visited = true;
+          newGrid[row][col].wall = false;
+
+          const newWalls = getWalls(randomNeighbor.row, randomNeighbor.col, gridSize);
+          walls.push(...newWalls);
         }
+
+        walls.splice(randomWallIndex, 1);
       }
 
       setGrid(newGrid);
     };
 
-    const getUnvisitedNeighbors = (cell, grid) => {
+    const getNeighbors = (row, col, grid) => {
+      const directions = [
+        { row: -2, col: 0 },
+        { row: 2, col: 0 },
+        { row: 0, col: -2 },
+        { row: 0, col: 2 },
+      ];
+
       const neighbors = [];
+
+      directions.forEach(direction => {
+        const newRow = row + direction.row;
+        const newCol = col + direction.col;
+
+        if (newRow >= 0 && newRow < gridSize && newCol >= 0 && newCol < gridSize) {
+          neighbors.push({ row: newRow, col: newCol });
+        }
+      });
+
+      return neighbors;
+    };
+
+    const getWalls = (row, col, gridSize) => {
+      const walls = [];
 
       const directions = [
         { row: -2, col: 0 },
@@ -46,29 +84,15 @@ const GridComponent = ({ gridSize }) => {
       ];
 
       directions.forEach(direction => {
-        const newRow = cell.row + direction.row;
-        const newCol = cell.col + direction.col;
+        const newRow = row + direction.row;
+        const newCol = col + direction.col;
 
         if (newRow >= 0 && newRow < gridSize && newCol >= 0 && newCol < gridSize) {
-          if (!grid[newRow][newCol].visited) {
-            neighbors.push(grid[newRow][newCol]);
-          }
+          walls.push({ row: newRow, col: newCol });
         }
       });
 
-      return neighbors;
-    };
-
-    const removeWall = (currentCell, nextCell, grid) => {
-      const rowDiff = nextCell.row - currentCell.row;
-      const colDiff = nextCell.col - currentCell.col;
-
-      const wallToRemove = {
-        row: currentCell.row + rowDiff / 2,
-        col: currentCell.col + colDiff / 2,
-      };
-
-      grid[wallToRemove.row][wallToRemove.col].visited = true;
+      return walls;
     };
 
     generateMaze();
@@ -81,9 +105,9 @@ const GridComponent = ({ gridSize }) => {
           {row.map((cell, colIndex) => (
             <div
               key={rowIndex * gridSize + colIndex}
-              className={`${styles.grid_item} ${cell.visited ? styles.visited : ''}`}
+              className={`${styles.grid_item} ${cell.wall ? styles.wall : ''}`}
             >
-              {/* Блок окрашивается в белый цвет, если посещен */}
+              {/* Блоки с классом 'wall' будут иметь стиль, задающий стену */}
             </div>
           ))}
         </div>

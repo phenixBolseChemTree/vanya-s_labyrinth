@@ -8,6 +8,7 @@
   /* Занимать всю доступную ширину внутри строки */
   box-sizing: border-box;
   /* Учесть padding и border внутри элемента */
+
 }
 
 .grid_container {
@@ -28,4 +29,15 @@
 .visited {
   background-color: #fff;
   /* Белый цвет для посещенных ячеек */
+}
+
+/* .grid_item {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #000;
+} */
+
+.wall {
+  background-color: #000;
+  /* Цвет стен */
 }
